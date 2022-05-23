@@ -16,6 +16,15 @@ public interface OfferDetailsRepository extends MongoRepository<OfferDetails, St
     Page<OfferDetails> findByCategoryAndJobType(String category, String jobType, Pageable pageable);
 
     @Query("{'offerTitle':{'$regex':'?0','$options':'i'}}")
-    Page<OfferDetails> searchByName(Optional<String> name, Pageable pageable);
+    Page<OfferDetails> findByName(Optional<String> name, Pageable pageable);
+
+    @Query("{'category':{'$regex':'?0','$options':'i'}, 'offerTitle':{'$regex':'?1','$options':'i'}}")
+    Page<OfferDetails> findByCategoryAndName(String category, Optional<String> name, Pageable pageable);
+    
+    @Query("{'jobType':{'$regex':'?0','$options':'i'}, 'offerTitle':{'$regex':'?1','$options':'i'}}")
+    Page<OfferDetails> findByJobTypeAndName(String type, Optional<String> name, Pageable pageable);
+    
+    @Query("{'category':{'$regex':'?0','$options':'i'}, 'jobType':{'$regex':'?1','$options':'i'}, 'offerTitle':{'$regex':'?2','$options':'i'}}")
+    Page<OfferDetails> findByCategoryAndJobTypeAndName(String category, String jobType, Optional<String> name, Pageable pageable);
 
 }
