@@ -10,7 +10,6 @@ import java.util.Date;
 @Setter
 public class JobDetail {
 
-    String jobType;
     String location;
     String starts;
     String ends;

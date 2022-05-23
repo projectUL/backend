@@ -1,19 +1,19 @@
 package com.example.demo.controller;
 
+import com.example.demo.ExtraClasses.Application;
 import com.example.demo.ExtraClasses.UserEdit;
+import com.example.demo.ExtraClasses.UserRegister;
 import com.example.demo.model.Users;
 import com.example.demo.repository.UsersRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.TextCodec;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.Option;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,26 +34,43 @@ public class UsersController {
 
     @PostMapping("/register")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody Users user) {
+    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody UserRegister register) {
         Map<String, Object> response = new HashMap<>();
-        if ((user.getEmail().contains("edu.") && user.getIsEmployer() == false) || (!user.getEmail().contains("edu.") && user.getIsEmployer() == true)) {
-            if (repository.existsByEmail(user.getEmail())) {
+        
+        Users user = new Users();
+        user.setEmail(register.getEmail());
+        user.setApplications(new Application[0]);
+        
+        if(register.getCompanyName() == null || register.getCompanyName().isBlank())
+        {
+            user.setIsEmployer(false);
+            user.setCompanyName("");
+            user.setAccessLevel(1);
+        }
+        else
+        {
+            user.setIsEmployer(true);
+            user.setCompanyName(register.getCompanyName());
+            user.setAccessLevel(2);
+        }
+
+        
+        if((user.getEmail().contains("edu.") && user.getIsEmployer() == false) || (!user.getEmail().contains("edu.") && user.getIsEmployer() == true))
+        {
+            if (repository.existsByEmail(user.getEmail()))
+            {
                 response.put("errorMessage", "User already exists");
                 return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
-            } else {
+            } 
+            else 
+            {
                 BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-                if (user.getIsEmployer()) {
-                    user.setAccessLevel(2);
-                } else {
-                    user.setAccessLevel(1);
-                }
-
-                user.setPassword(encoder.encode(user.getPassword()));
+                user.setPassword(encoder.encode(register.getPassword()));
 
                 Long now = System.currentTimeMillis();
-                String token = Jwts.builder().setSubject(user.getEmail()).claim("email", user.getEmail()).claim("accessLevel", user.getAccessLevel()).setExpiration(new Date(now + 3600000)).signWith(SignatureAlgorithm.HS256, "SafestPassEver").compact();
-
+                String token = Jwts.builder().setSubject(user.getEmail()).claim("email", user.getEmail()).claim("accessLevel", user.getAccessLevel()).setExpiration(new Date(now + 3600000)).signWith(SignatureAlgorithm.HS256, TextCodec.BASE64.decode("SafestPassEver")).compact();
+                
                 repository.save(user);
                 response.put("email", user.getEmail());
                 response.put("accessLevel", user.getAccessLevel());
@@ -61,15 +78,19 @@ public class UsersController {
                 response.put("expiresIn", 3600);
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
-        } else if (user.getEmail().contains("edu.") && user.getIsEmployer() == true) {
+        }
+        else if (user.getEmail().contains("edu.") && user.getIsEmployer() == true)
+        {
             response.put("errorMessage", "Student can not create company account");
             return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
-        } else {
+        }
+        else
+        {
             response.put("errorMessage", "User is not a student");
             return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }
     }
-
+    
     @PostMapping("/login")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Users user) {
