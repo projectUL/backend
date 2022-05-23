@@ -1,0 +1,162 @@
+package com.example.demo.controller;
+
+import com.example.demo.ExtraClasses.UserEdit;
+import com.example.demo.model.Users;
+import com.example.demo.repository.UsersRepository;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import javax.swing.text.html.Option;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/user")
+public class UsersController {
+
+    @Autowired
+    UsersRepository repository;
+
+    /*
+    @GetMapping("/{id}")
+    Optional<Users> getUser(@PathVariable String id){
+        return repository.findById(id);
+    }*/
+
+    @PostMapping("/register")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody Users user) {
+        Map<String, Object> response = new HashMap<>();
+        if ((user.getEmail().contains("edu.") && user.getIsEmployer() == false) || (!user.getEmail().contains("edu.") && user.getIsEmployer() == true)) {
+            if (repository.existsByEmail(user.getEmail())) {
+                response.put("errorMessage", "User already exists");
+                return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+            } else {
+                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+                if (user.getIsEmployer()) {
+                    user.setAccessLevel(2);
+                } else {
+                    user.setAccessLevel(1);
+                }
+
+                user.setPassword(encoder.encode(user.getPassword()));
+
+                Long now = System.currentTimeMillis();
+                String token = Jwts.builder().setSubject(user.getEmail()).claim("email", user.getEmail()).claim("accessLevel", user.getAccessLevel()).setExpiration(new Date(now + 3600000)).signWith(SignatureAlgorithm.HS256, "SafestPassEver").compact();
+
+                repository.save(user);
+                response.put("email", user.getEmail());
+                response.put("accessLevel", user.getAccessLevel());
+                response.put("token", token);
+                response.put("expiresIn", 3600);
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        } else if (user.getEmail().contains("edu.") && user.getIsEmployer() == true) {
+            response.put("errorMessage", "Student can not create company account");
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+        } else {
+            response.put("errorMessage", "User is not a student");
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
+    @PostMapping("/login")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Users user) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (repository.existsByEmail(user.getEmail())) {
+            Optional<Users> usr = repository.findByEmail(user.getEmail());
+            String PassDB = usr.get().getPassword();
+            int accessLvl = usr.get().getAccessLevel();
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+            if (encoder.matches(user.getPassword(), PassDB)) {
+                Long now = System.currentTimeMillis();
+                String token = Jwts.builder().setSubject(user.getEmail()).claim("email", user.getEmail()).claim("accessLevel", accessLvl).setExpiration(new Date(now + 3600000)).signWith(SignatureAlgorithm.HS256, "SafestPassEver").compact();
+
+                response.put("email", user.getEmail());
+                response.put("accessLevel", accessLvl);
+                response.put("token", token);
+                response.put("expiresIn", 3600);
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                response.put("errorMessage", "Password is incorect");
+                return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+            }
+
+        } else {
+            response.put("errorMessage", "User does not exist.");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/{email}")
+    @ResponseBody
+    public Optional<Users> getUerByEmail(@PathVariable String email) {
+        return repository.findByEmail(email);
+    }
+
+
+    @PutMapping("/edit/email")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> editUserEmail(@RequestBody UserEdit editUser) {
+        Map<String, Object> response = new HashMap<>();
+
+        if (repository.existsByEmail(editUser.getNewEmail())) {
+            response.put("errorMessage", "Email is already taken");
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+        } else if (editUser.getNewEmail().equals(editUser.getOldEmail())) {
+            response.put("errorMessage", "Provided same email address");
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+        } else {
+            Optional<Users> user = repository.findByEmail(editUser.getOldEmail());
+            user.get().setEmail(editUser.getNewEmail());
+            repository.save(user);
+
+            response.put("email", user.get().getEmail());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+    }
+
+    @PutMapping("/edit/pswd")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> editUserPassword(@RequestBody UserEdit editUser) {
+        Map<String, Object> response = new HashMap<>();
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        Optional<Users> user = repository.findByEmail(editUser.getOldEmail());
+
+        if (encoder.matches(editUser.getOldPassword(), user.get().getPassword())) {
+            if (editUser.getNewPassword().equals(editUser.getConfirmNew())) {
+                if (editUser.getOldPassword().equals(editUser.getNewPassword())) {
+                    response.put("errorMessage", "Same old and new password");
+                    return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+                } else {
+                    user.get().setPassword(encoder.encode(editUser.getNewPassword()));
+                    repository.save(user);
+
+                    response.put("email", user.get().getEmail());
+                    return new ResponseEntity<>(response, HttpStatus.OK);
+                }
+            } else {
+                response.put("errorMessage", "Confirmation password is incorrect");
+                return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+            }
+        } else {
+            response.put("errorMessage", "Old password is incorrect");
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+}
