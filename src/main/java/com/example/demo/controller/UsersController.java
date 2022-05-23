@@ -180,4 +180,28 @@ public class UsersController {
             return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }
     }
+    
+    @PutMapping("/apply/{email}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addApplication(@PathVariable String email, @RequestBody Application application)
+    {
+        Users user = repository.findByEmail(email).get();
+        int size = user.getApplications().length;
+
+        Application[] newApplications = new Application[size+1];
+        
+        for(int i=0; i<size; i++)
+        {
+            newApplications[i] = user.getApplications()[i];
+        }
+        
+        newApplications[size] = application;
+        
+        user.setApplications(newApplications);
+        repository.save(user);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("email", user.getEmail());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

@@ -15,4 +15,5 @@ public class Application {
     String companyPic;
     String status;
     Date applied;
+    String offerID;
 }
