@@ -41,7 +41,7 @@ public class UsersController {
         user.setEmail(register.getEmail());
         user.setApplications(new Application[0]);
         
-        if(register.getCompanyName() == null || register.getCompanyName().isBlank())
+        if(register.getCompanyName() == null || register.getCompanyName().isEmpty())
         {
             user.setIsEmployer(false);
             user.setCompanyName("");
