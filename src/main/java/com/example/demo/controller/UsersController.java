@@ -142,11 +142,11 @@ public class UsersController {
             response.put("errorMessage", "Provided same email address");
             return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         } else {
-            Optional<Users> user = repository.findByEmail(editUser.getOldEmail());
-            user.get().setEmail(editUser.getNewEmail());
+            Users user = repository.findByEmail(editUser.getOldEmail()).get();
+            user.setEmail(editUser.getNewEmail());
             repository.save(user);
 
-            response.put("email", user.get().getEmail());
+            response.put("email", user.getEmail());
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
     }
@@ -157,18 +157,18 @@ public class UsersController {
         Map<String, Object> response = new HashMap<>();
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-        Optional<Users> user = repository.findByEmail(editUser.getOldEmail());
+        Users user = repository.findByEmail(editUser.getOldEmail()).get();
 
-        if (encoder.matches(editUser.getOldPassword(), user.get().getPassword())) {
+        if (encoder.matches(editUser.getOldPassword(), user.getPassword())) {
             if (editUser.getNewPassword().equals(editUser.getConfirmNew())) {
                 if (editUser.getOldPassword().equals(editUser.getNewPassword())) {
                     response.put("errorMessage", "Same old and new password");
                     return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
                 } else {
-                    user.get().setPassword(encoder.encode(editUser.getNewPassword()));
+                    user.setPassword(encoder.encode(editUser.getNewPassword()));
                     repository.save(user);
 
-                    response.put("email", user.get().getEmail());
+                    response.put("email", user.getEmail());
                     return new ResponseEntity<>(response, HttpStatus.OK);
                 }
             } else {
