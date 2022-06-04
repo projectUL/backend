@@ -55,7 +55,7 @@ public class CompanyController {
         response.put("next", paging.hasNext());
         response.put("previous", paging.hasPrevious());
         response.put("data", list);
-        return new ResponseEntity<>(response, HttpStatus.FOUND);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
     
     @GetMapping("/{id}")
