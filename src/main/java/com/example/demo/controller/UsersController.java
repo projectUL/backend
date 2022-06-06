@@ -61,7 +61,7 @@ public class UsersController {
             if (repository.existsByEmail(user.getEmail()))
             {
                 response.put("errorMessage", "User already exists");
-                return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+                return new ResponseEntity<>(response, HttpStatus.OK);
             } 
             else 
             {
