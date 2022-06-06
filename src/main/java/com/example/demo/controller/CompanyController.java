@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-@CrossOrigin
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/company")
 public class CompanyController {
@@ -55,7 +55,7 @@ public class CompanyController {
         response.put("next", paging.hasNext());
         response.put("previous", paging.hasPrevious());
         response.put("data", list);
-        return new ResponseEntity<>(response, HttpStatus.FOUND);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
     
     @GetMapping("/{id}")
