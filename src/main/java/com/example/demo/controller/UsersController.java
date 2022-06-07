@@ -61,7 +61,7 @@ public class UsersController {
             if (repository.existsByEmail(user.getEmail()))
             {
                 response.put("errorMessage", "User already exists");
-                return new ResponseEntity<>(response, HttpStatus.OK);
+                return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
             } 
             else 
             {
@@ -83,12 +83,12 @@ public class UsersController {
         else if (user.getEmail().contains("edu.") && user.getIsEmployer() == true)
         {
             response.put("errorMessage", "Student can not create company account");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }
         else
         {
             response.put("errorMessage", "User is not a student");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }
     }
     
@@ -115,12 +115,12 @@ public class UsersController {
                 return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
                 response.put("errorMessage", "Password is incorect");
-                return new ResponseEntity<>(response, HttpStatus.OK);
+                return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
             }
 
         } else {
             response.put("errorMessage", "User does not exist.");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }
     }
 
@@ -138,10 +138,10 @@ public class UsersController {
 
         if (repository.existsByEmail(editUser.getNewEmail())) {
             response.put("errorMessage", "Email is already taken");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         } else if (editUser.getNewEmail().equals(editUser.getOldEmail())) {
             response.put("errorMessage", "Provided same email address");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         } else {
             Users user = repository.findByEmail(editUser.getOldEmail()).get();
             user.setEmail(editUser.getNewEmail());
@@ -164,7 +164,7 @@ public class UsersController {
             if (editUser.getNewPassword().equals(editUser.getConfirmNew())) {
                 if (editUser.getOldPassword().equals(editUser.getNewPassword())) {
                     response.put("errorMessage", "Same old and new password");
-                    return new ResponseEntity<>(response, HttpStatus.OK);
+                    return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
                 } else {
                     user.setPassword(encoder.encode(editUser.getNewPassword()));
                     repository.save(user);
@@ -174,11 +174,11 @@ public class UsersController {
                 }
             } else {
                 response.put("errorMessage", "Confirmation password is incorrect");
-                return new ResponseEntity<>(response, HttpStatus.OK);
+                return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
             }
         } else {
             response.put("errorMessage", "Old password is incorrect");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }
     }
     
