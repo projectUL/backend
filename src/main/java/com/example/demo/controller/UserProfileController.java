@@ -21,9 +21,13 @@ public class UserProfileController {
 
     @PostMapping("/createprofile/{email}")
     public String createUserProfile(@PathVariable String email) {
-        UserProfile profile = new UserProfile();
-        profile.setUserEmail(email);
-        return repository.save(profile).getId();
+
+        if (repository.findByUserEmail(email).isEmpty()){
+            UserProfile profile = new UserProfile();
+            profile.setUserEmail(email);
+            return repository.save(profile).getId();
+        }
+        return "Profile already exists";
     }
 
 
