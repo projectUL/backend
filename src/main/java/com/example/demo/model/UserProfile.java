@@ -9,6 +9,9 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @Document(collection="userProfile")
@@ -19,7 +22,11 @@ public class UserProfile {
     String userEmail;
     Description description;
     Skills skills;
-    Experience[] experience;
-    Project[] projects;
+//    Experience[] experience;
+//    Project[] projects;
+    List<Experience> experience = new ArrayList<Experience>();
+    List<Project> projects = new ArrayList<Project>();
+
+
 
 }
