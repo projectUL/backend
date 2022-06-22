@@ -28,6 +28,9 @@ public class UsersController {
 
     @Autowired
     UsersRepository repository;
+    
+    @Autowired
+    UserProfileRepository userRepo;
 
     /*
     @GetMapping("/{id}")
@@ -150,9 +153,9 @@ public class UsersController {
             repository.save(user);
             response.put("email", user.getEmail());
             
-            UserProfileRepository userRepo = null;
+            
             UserProfile profile = userRepo.findByUserEmail(editUser.getOldEmail()).get();
-            profile.setUserEmail(user.getEmail());
+            profile.setUserEmail(editUser.getNewEmail());
             userRepo.save(profile);
             
             return new ResponseEntity<>(response, HttpStatus.OK);
