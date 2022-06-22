@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/offers")
 public class OfferDetailsController {
@@ -74,7 +75,7 @@ public class OfferDetailsController {
         response.put("next", paging.hasNext());
         response.put("previous", paging.hasPrevious());
         response.put("data", list);
-        return new ResponseEntity<>(response, HttpStatus.FOUND);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

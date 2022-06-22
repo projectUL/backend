@@ -3,7 +3,9 @@ package com.example.demo.controller;
 import com.example.demo.ExtraClasses.Application;
 import com.example.demo.ExtraClasses.UserEdit;
 import com.example.demo.ExtraClasses.UserRegister;
+import com.example.demo.model.UserProfile;
 import com.example.demo.model.Users;
+import com.example.demo.repository.UserProfileRepository;
 import com.example.demo.repository.UsersRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -19,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/user")
 public class UsersController {
@@ -41,7 +44,7 @@ public class UsersController {
         user.setEmail(register.getEmail());
         user.setApplications(new Application[0]);
         
-        if(register.getCompanyName() == null || register.getCompanyName().isEmpty())
+        if(register.getCompanyName() == null || register.getCompanyName().isBlank())
         {
             user.setIsEmployer(false);
             user.setCompanyName("");
@@ -119,7 +122,7 @@ public class UsersController {
 
         } else {
             response.put("errorMessage", "User does not exist.");
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }
     }
 
@@ -142,11 +145,16 @@ public class UsersController {
             response.put("errorMessage", "Provided same email address");
             return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         } else {
-            Optional<Users> user = repository.findByEmail(editUser.getOldEmail());
-            user.get().setEmail(editUser.getNewEmail());
+            Users user = repository.findByEmail(editUser.getOldEmail()).get();
+            user.setEmail(editUser.getNewEmail());
             repository.save(user);
-
-            response.put("email", user.get().getEmail());
+            response.put("email", user.getEmail());
+            
+            UserProfileRepository userRepo = null;
+            UserProfile profile = userRepo.findByUserEmail(editUser.getOldEmail()).get();
+            profile.setUserEmail(user.getEmail());
+            userRepo.save(profile);
+            
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
     }
@@ -157,18 +165,18 @@ public class UsersController {
         Map<String, Object> response = new HashMap<>();
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-        Optional<Users> user = repository.findByEmail(editUser.getOldEmail());
+        Users user = repository.findByEmail(editUser.getOldEmail()).get();
 
-        if (encoder.matches(editUser.getOldPassword(), user.get().getPassword())) {
+        if (encoder.matches(editUser.getOldPassword(), user.getPassword())) {
             if (editUser.getNewPassword().equals(editUser.getConfirmNew())) {
                 if (editUser.getOldPassword().equals(editUser.getNewPassword())) {
                     response.put("errorMessage", "Same old and new password");
                     return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
                 } else {
-                    user.get().setPassword(encoder.encode(editUser.getNewPassword()));
+                    user.setPassword(encoder.encode(editUser.getNewPassword()));
                     repository.save(user);
 
-                    response.put("email", user.get().getEmail());
+                    response.put("email", user.getEmail());
                     return new ResponseEntity<>(response, HttpStatus.OK);
                 }
             } else {
