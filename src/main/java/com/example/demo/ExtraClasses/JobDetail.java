@@ -11,8 +11,8 @@ import java.util.Date;
 public class JobDetail {
 
     String location;
-    String starts;
-    String ends;
+    Date starts;
+    Date ends;
     int minSalary;
     int maxSalary;
     int numberOfCandidates;
