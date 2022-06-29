@@ -1,10 +1,11 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Company;
-import com.example.demo.model.CompanyProfile;
 import com.example.demo.repository.CompanyRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -78,6 +79,9 @@ public class CompanyController {
     @ResponseBody
     public String updateOneCompany(@RequestBody Company company)
     {
+        String myId = company.getId();
+        repository.deleteById(myId);
+        company.setId(myId);
         return repository.save(company).getId();
     }
 
