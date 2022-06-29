@@ -57,10 +57,11 @@ public class AdminController {
 
     @PutMapping("/{email}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> verifyCompany(@PathVariable String email, @RequestParam("verify") boolean ver)
+    public ResponseEntity<Map<String, Object>> verifyCompany(@PathVariable String email, @RequestParam("verify") boolean ver, @RequestParam("accept") boolean acc)
     {
         Admin admin = repository.findByCompanyMail(email);
-        admin.setIsAccepted(ver);
+        admin.setIsVerified(ver);
+        admin.setIsAccepted(acc);
         repository.save(admin);
 
         Company company = new Company();
