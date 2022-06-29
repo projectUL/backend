@@ -4,11 +4,10 @@ import com.example.demo.ExtraClasses.Application;
 import com.example.demo.ExtraClasses.UserEdit;
 import com.example.demo.ExtraClasses.UserRegister;
 import com.example.demo.model.Admin;
+import com.example.demo.model.OfferDetails;
 import com.example.demo.model.UserProfile;
 import com.example.demo.model.Users;
-import com.example.demo.repository.AdminRepository;
-import com.example.demo.repository.UserProfileRepository;
-import com.example.demo.repository.UsersRepository;
+import com.example.demo.repository.*;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.TextCodec;
@@ -18,10 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
@@ -36,6 +32,9 @@ public class UsersController {
 
     @Autowired
     AdminRepository adminRepo;
+
+    @Autowired
+    OfferDetailsRepository offerRepo;
 
     /*
     @GetMapping("/{id}")
@@ -241,6 +240,14 @@ public class UsersController {
 
         user.setApplications(newApplications);
         repository.save(user);
+
+        OfferDetails offers = offerRepo.findById(application.getOfferID()).get();
+
+        List<String> applicationUsers = offers.getApplications();
+        applicationUsers.add(application.getUserID());
+        offers.setApplications(applicationUsers);
+        offerRepo.save(offers);
+
 
         Map<String, Object> response = new HashMap<>();
         response.put("email", user.getEmail());
