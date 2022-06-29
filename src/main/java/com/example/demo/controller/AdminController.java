@@ -64,9 +64,12 @@ public class AdminController {
         admin.setIsAccepted(acc);
         repository.save(admin);
 
-        Company company = new Company();
-        company.setCompanyMail(email);
-        compRepo.save(company);
+        if(ver==true && acc==true)
+        {
+            Company company = new Company();
+            company.setCompanyMail(email);
+            compRepo.save(company);
+        }
 
         Map<String, Object> response = new HashMap<>();
         response.put("name", admin.getCompanyName());
