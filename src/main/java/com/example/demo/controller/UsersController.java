@@ -3,7 +3,9 @@ package com.example.demo.controller;
 import com.example.demo.ExtraClasses.Application;
 import com.example.demo.ExtraClasses.UserEdit;
 import com.example.demo.ExtraClasses.UserRegister;
+import com.example.demo.model.UserProfile;
 import com.example.demo.model.Users;
+import com.example.demo.repository.UserProfileRepository;
 import com.example.demo.repository.UsersRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -27,6 +29,9 @@ public class UsersController {
     @Autowired
     UsersRepository repository;
 
+    @Autowired
+    UserProfileRepository userRepo;
+
     /*
     @GetMapping("/{id}")
     Optional<Users> getUser(@PathVariable String id){
@@ -37,11 +42,11 @@ public class UsersController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> registerUser(@RequestBody UserRegister register) {
         Map<String, Object> response = new HashMap<>();
-        
+
         Users user = new Users();
         user.setEmail(register.getEmail());
         user.setApplications(new Application[0]);
-        
+
         if(register.getCompanyName() == null || register.getCompanyName().isBlank())
         {
             user.setIsEmployer(false);
@@ -55,15 +60,15 @@ public class UsersController {
             user.setAccessLevel(2);
         }
 
-        
+
         if((user.getEmail().contains("edu.") && user.getIsEmployer() == false) || (!user.getEmail().contains("edu.") && user.getIsEmployer() == true))
         {
             if (repository.existsByEmail(user.getEmail()))
             {
                 response.put("errorMessage", "User already exists");
                 return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
-            } 
-            else 
+            }
+            else
             {
                 BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -71,7 +76,7 @@ public class UsersController {
 
                 Long now = System.currentTimeMillis();
                 String token = Jwts.builder().setSubject(user.getEmail()).claim("email", user.getEmail()).claim("accessLevel", user.getAccessLevel()).setExpiration(new Date(now + 3600000)).signWith(SignatureAlgorithm.HS256, TextCodec.BASE64.decode("SafestPassEver")).compact();
-                
+
                 repository.save(user);
                 response.put("email", user.getEmail());
                 response.put("accessLevel", user.getAccessLevel());
@@ -91,7 +96,7 @@ public class UsersController {
             return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }
     }
-    
+
     @PostMapping("/login")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Users user) {
@@ -146,8 +151,13 @@ public class UsersController {
             Users user = repository.findByEmail(editUser.getOldEmail()).get();
             user.setEmail(editUser.getNewEmail());
             repository.save(user);
-
             response.put("email", user.getEmail());
+
+
+            UserProfile profile = userRepo.findByUserEmail(editUser.getOldEmail()).get();
+            profile.setUserEmail(editUser.getNewEmail());
+            userRepo.save(profile);
+
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
     }
@@ -181,7 +191,7 @@ public class UsersController {
             return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }
     }
-    
+
     @PutMapping("/apply/{email}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> addApplication(@PathVariable String email, @RequestBody Application application)
@@ -190,17 +200,17 @@ public class UsersController {
         int size = user.getApplications().length;
 
         Application[] newApplications = new Application[size+1];
-        
+
         for(int i=0; i<size; i++)
         {
             newApplications[i] = user.getApplications()[i];
         }
-        
+
         newApplications[size] = application;
-        
+
         user.setApplications(newApplications);
         repository.save(user);
-        
+
         Map<String, Object> response = new HashMap<>();
         response.put("email", user.getEmail());
         return new ResponseEntity<>(response, HttpStatus.OK);

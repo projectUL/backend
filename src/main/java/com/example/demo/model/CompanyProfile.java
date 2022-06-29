@@ -18,6 +18,6 @@ public class CompanyProfile {
     private String id;
     Description description;
     String userEmail;
-    List<OfferDetails> offerDetails = new ArrayList<>();
+    List<OfferDetails> offerDetails = new ArrayList<OfferDetails>();
 
 }

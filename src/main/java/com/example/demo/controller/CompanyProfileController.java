@@ -28,20 +28,30 @@ public class CompanyProfileController {
     }
 
 
-    @GetMapping("/{email}")
-    public String getUserId(@PathVariable String email) {
-        if (repository.findByUserEmail(email).isPresent())
-            return repository.findByUserEmail(email).get().getId();
-        return null;
-    }
+//    @GetMapping("/{email}")
+//    public String getUserId(@PathVariable String email) {
+//        if (repository.findByUserEmail(email).isPresent())
+//            return repository.findByUserEmail(email).get().getId();
+//        return null;
+//    }
 
 
     @GetMapping("/getprofile/{email}")
-    public CompanyProfile getCompanyProfile(@PathVariable String email) {
+    public CompanyProfile getCompanyProfileByEmail(@PathVariable String email) {
         if (repository.findByUserEmail(email).isPresent())
             return repository.findByUserEmail(email).get();
         return null;
     }
+
+
+//    @GetMapping("/getprofile/{id}")
+//    public CompanyProfile getCompanyProfileById(@PathVariable String id) {
+//        System.out.println("co jest");
+//        if (repository.findById(id).isPresent()){
+//            return repository.findById(id).get();
+//        }
+//        return null;
+//    }
 
     @PutMapping("/createprofile/description/{id}")
     public void createCompanyProfileDescription(
@@ -54,16 +64,16 @@ public class CompanyProfileController {
             repository.save(profile.get());
         }
     }
-
-
+//
+//
     @GetMapping("/createprofile/description/{id}")
     public Description getCompanyProfileDescription(@PathVariable String id) {
         if (repository.findById(id).isPresent())
             return repository.findById(id).get().getDescription();
         return null;
     }
-
-
+//
+//
     @DeleteMapping("/delete/description/{id}")
     public CompanyProfile deleteCompanyProfileDescription(@PathVariable String id) {
         Optional<CompanyProfile> profile = repository.findById(id);
@@ -83,11 +93,48 @@ public class CompanyProfileController {
             @PathVariable String id
     ) {
         Optional<CompanyProfile> profile = repository.findById(id);
-        profile.get().getOfferDetails().add(details);
 
-        repository.save(profile.get());
+        if (profile.isPresent()) {
+            profile.get().getOfferDetails().add(details);
+            repository.save(profile.get());
+        }
 
         return profile;
     }
 
+
+    @GetMapping("/offer/{id}")
+    public java.util.List<OfferDetails> getCompanyOffers(@PathVariable String id) {
+        if (repository.findById(id).isPresent())
+            return repository.findById(id).get().getOfferDetails();
+        return null;
+    }
+
+
+//    @DeleteMapping("/delete/offer/{id}")
+//    public Optional<CompanyProfile> deleteApplication(@PathVariable String id,
+//                                                      @RequestBody ApplicationHolder toDelete) {
+//
+//        Optional<CompanyProfile> profile = repository.findById(id);
+//
+//        if (profile.isPresent()){
+//            int tempIndex=0;
+//            System.out.println("size:"+profile.get().getOfferDetails().size());
+//            for(int i =0; i< profile.get().getOfferDetails().get((toDelete.getOfferDetailsIndex())).getApplications().length; i++){
+//                System.out.println("xd");
+//                profile.get().getOfferDetails().get(0).getApplications()[0];
+//                System.out.println(profile.get().getOfferDetails().get(toDelete.getOfferDetailsIndex()).getApplications());
+//                if (profile.get().getOfferDetails().get(toDelete.getOfferDetailsIndex()).getApplications()[i].equals(toDelete.getApplicationID()))
+//                    tempIndex=i;
+//            }
+//            System.out.println("tempIndex"+ tempIndex);
+////            profile.get().getOfferDetails().remove(tempIndex);
+//            profile.get().getOfferDetails().remove(tempIndex);
+//
+//            repository.save(profile.get());
+//            return Optional.of(profile.get());
+//        }
+//
+//        return Optional.empty();
+//    }
 }
