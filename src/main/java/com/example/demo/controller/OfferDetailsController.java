@@ -84,7 +84,7 @@ public class OfferDetailsController {
         return repository.findById(id);
     }
 
-    @GetMapping("/{name}")
+    @GetMapping("/name/{name}")
     @ResponseBody
     public List<OfferDetails> getOffers(@PathVariable String name){
         return repository.findByCompanyName(name);
