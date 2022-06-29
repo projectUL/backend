@@ -2,21 +2,18 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Company;
 import com.example.demo.repository.CompanyRepository;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
@@ -33,7 +30,7 @@ public class CompanyController {
         int rightPage = page - 1;
         Pageable pageable = PageRequest.of(rightPage, size);
 
-        List<Company> list = new ArrayList<>();
+        List<Company> list;
         Page<Company> paging;
 
         if(q.isPresent())
@@ -75,17 +72,19 @@ public class CompanyController {
     }
 
 
-    @DeleteMapping("/update")
+    @PutMapping("/update")
     @ResponseBody
     public String updateOneCompany(@RequestBody Company company)
     {
-        String myId = company.getId();
-        repository.deleteById(myId);
-        company.setId(myId);
-        return repository.save(company).getId();
+        Company myCompany = repository.findById(company.getId()).get();
+        myCompany.setCompanyMail(company.getCompanyMail());
+        myCompany.setCompanyLogo(company.getCompanyLogo());
+        myCompany.setCompanyName(company.getCompanyName());
+        myCompany.setCompanyOverview(company.getCompanyOverview());
+        myCompany.setCompanyWebsite(company.getCompanyWebsite());
+        myCompany.setJobs(company.getJobs());
+
+        return repository.save(myCompany).getId();
+
     }
-
-
-
-
 }
