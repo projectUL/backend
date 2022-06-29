@@ -3,8 +3,10 @@ package com.example.demo.controller;
 import com.example.demo.ExtraClasses.Application;
 import com.example.demo.ExtraClasses.UserEdit;
 import com.example.demo.ExtraClasses.UserRegister;
+import com.example.demo.model.Admin;
 import com.example.demo.model.UserProfile;
 import com.example.demo.model.Users;
+import com.example.demo.repository.AdminRepository;
 import com.example.demo.repository.UserProfileRepository;
 import com.example.demo.repository.UsersRepository;
 import io.jsonwebtoken.Jwts;
@@ -31,6 +33,9 @@ public class UsersController {
 
     @Autowired
     UserProfileRepository userRepo;
+
+    @Autowired
+    AdminRepository adminRepo;
 
     /*
     @GetMapping("/{id}")
@@ -82,6 +87,17 @@ public class UsersController {
                 response.put("accessLevel", user.getAccessLevel());
                 response.put("token", token);
                 response.put("expiresIn", 3600);
+
+                if(user.getIsEmployer())
+                {
+                    Admin admin = new Admin();
+                    admin.setCompanyName(user.getCompanyName());
+                    admin.setCompanyMail(user.getEmail());
+                    admin.setIsAccepted(false);
+                    adminRepo.save(admin);
+
+                }
+
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
         }
@@ -109,7 +125,20 @@ public class UsersController {
             int accessLvl = usr.get().getAccessLevel();
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-            if (encoder.matches(user.getPassword(), PassDB)) {
+            if(usr.get().getIsEmployer())
+            {
+                String em = usr.get().getEmail();
+
+                Admin admin = adminRepo.findByCompanyMail(em);
+                if(admin.getIsAccepted() == false)
+                {
+                    response.put("errorMessage", "Company is not accepted");
+                    return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+                }
+            }
+
+            if (encoder.matches(user.getPassword(), PassDB))
+            {
                 Long now = System.currentTimeMillis();
                 String token = Jwts.builder().setSubject(user.getEmail()).claim("email", user.getEmail()).claim("accessLevel", accessLvl).setExpiration(new Date(now + 3600000)).signWith(SignatureAlgorithm.HS256, "SafestPassEver").compact();
 
@@ -123,7 +152,9 @@ public class UsersController {
                 return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
             }
 
-        } else {
+        }
+        else
+        {
             response.put("errorMessage", "User does not exist.");
             return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }

@@ -7,6 +7,9 @@ import com.example.demo.repository.CompanyProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -28,12 +31,12 @@ public class CompanyProfileController {
     }
 
 
-//    @GetMapping("/{email}")
-//    public String getUserId(@PathVariable String email) {
-//        if (repository.findByUserEmail(email).isPresent())
-//            return repository.findByUserEmail(email).get().getId();
-//        return null;
-//    }
+    @GetMapping("/{email}")
+    public String getUserId(@PathVariable String email) {
+        if (repository.findByUserEmail(email).isPresent())
+            return repository.findByUserEmail(email).get().getId();
+        return null;
+    }
 
 
     @GetMapping("/getprofile/{email}")
@@ -111,30 +114,49 @@ public class CompanyProfileController {
     }
 
 
-//    @DeleteMapping("/delete/offer/{id}")
-//    public Optional<CompanyProfile> deleteApplication(@PathVariable String id,
-//                                                      @RequestBody ApplicationHolder toDelete) {
-//
-//        Optional<CompanyProfile> profile = repository.findById(id);
-//
-//        if (profile.isPresent()){
-//            int tempIndex=0;
-//            System.out.println("size:"+profile.get().getOfferDetails().size());
-//            for(int i =0; i< profile.get().getOfferDetails().get((toDelete.getOfferDetailsIndex())).getApplications().length; i++){
-//                System.out.println("xd");
-//                profile.get().getOfferDetails().get(0).getApplications()[0];
-//                System.out.println(profile.get().getOfferDetails().get(toDelete.getOfferDetailsIndex()).getApplications());
-//                if (profile.get().getOfferDetails().get(toDelete.getOfferDetailsIndex()).getApplications()[i].equals(toDelete.getApplicationID()))
-//                    tempIndex=i;
-//            }
-//            System.out.println("tempIndex"+ tempIndex);
-////            profile.get().getOfferDetails().remove(tempIndex);
+    @DeleteMapping("/delete/offer/{id}")
+    public Optional<CompanyProfile> deleteApplication(@PathVariable String id,
+                                                      @RequestBody ApplicationHolder toDelete) {
+
+        Optional<CompanyProfile> profile = repository.findById(id);
+
+        if (profile.isPresent()){
+            int tempIndex=0;
+            System.out.println("size:"+profile.get().getOfferDetails().size());
+            for(int i =0; i<= profile.get().getOfferDetails().get((toDelete.getOfferDetailsIndex())).getApplications().size(); i++){
+//                System.out.println(Arrays.stream(profile.get().getOfferDetails().get(0).getApplications()).toList().get(i));
+
+                if (profile.get().getOfferDetails().get(toDelete.getOfferDetailsIndex()).getApplications().get(i).equals(toDelete.getApplicationID())){
+                    System.out.println("equals");
+                    tempIndex=i;
+                    break;
+                }
+            }
+            System.out.println("tempIndex"+ tempIndex);
 //            profile.get().getOfferDetails().remove(tempIndex);
-//
-//            repository.save(profile.get());
-//            return Optional.of(profile.get());
-//        }
-//
-//        return Optional.empty();
-//    }
+            profile.get().getOfferDetails().remove(tempIndex);
+
+            List<String> tempList = new ArrayList<String>();
+            List<String> outList = new ArrayList<String>();
+
+            tempList = profile.get().getOfferDetails().get(toDelete.getOfferDetailsIndex()).getApplications();
+
+            List<String> finalTempList = tempList;
+            outList = tempList.stream().filter((x)->{
+               return x.equals(finalTempList.get(toDelete.getOfferDetailsIndex()));
+            })
+                    .toList();
+
+
+            System.out.println("list comparison");
+            System.out.println(outList);
+            System.out.println(tempList);
+            profile.get().getOfferDetails().get(toDelete.getOfferDetailsIndex()).setApplications(outList);
+
+            repository.save(profile.get());
+            return Optional.of(profile.get());
+        }
+
+        return Optional.empty();
+    }
 }

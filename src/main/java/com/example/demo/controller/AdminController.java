@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Admin;
+import com.example.demo.model.Company;
 import com.example.demo.repository.AdminRepository;
+import com.example.demo.repository.CompanyRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +30,9 @@ public class AdminController {
 
     @Autowired
     AdminRepository repository;
+
+    @Autowired
+    CompanyRepository compRepo;
 
     @GetMapping("")
     @ResponseBody
@@ -57,6 +62,10 @@ public class AdminController {
         Admin admin = repository.findByCompanyMail(email);
         admin.setIsAccepted(ver);
         repository.save(admin);
+
+        Company company = new Company();
+        company.setCompanyMail(email);
+        compRepo.save(company);
 
         Map<String, Object> response = new HashMap<>();
         response.put("name", admin.getCompanyName());
