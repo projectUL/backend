@@ -36,11 +36,11 @@ public class UsersController {
     @Autowired
     OfferDetailsRepository offerRepo;
 
-    /*
-    @GetMapping("/{id}")
+    
+    @GetMapping("/id/{id}")
     Optional<Users> getUser(@PathVariable String id){
         return repository.findById(id);
-    }*/
+    }
 
     @PostMapping("/register")
     @ResponseBody
