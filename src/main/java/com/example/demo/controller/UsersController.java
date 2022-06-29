@@ -139,7 +139,7 @@ public class UsersController {
             if (encoder.matches(user.getPassword(), PassDB))
             {
                 Long now = System.currentTimeMillis();
-                String token = Jwts.builder().setSubject(user.getEmail()).claim("email", user.getEmail()).claim("accessLevel", accessLvl).setExpiration(new Date(now + 3600000)).signWith(SignatureAlgorithm.HS256, "SafestPassEver").compact();
+                String token = Jwts.builder().setSubject(user.getEmail()).claim("email", user.getEmail()).claim("accessLevel", accessLvl).setExpiration(new Date(now + 36000000)).signWith(SignatureAlgorithm.HS256, "SafestPassEver").compact();
 
                 response.put("email", user.getEmail());
                 response.put("accessLevel", accessLvl);
