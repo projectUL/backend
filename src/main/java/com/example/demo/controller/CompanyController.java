@@ -71,17 +71,12 @@ public class CompanyController {
         }
     }
 
-    @DeleteMapping("/delete/{id}")
-    public void deleteCompany(@PathVariable String id)
-    {
-        repository.deleteById(id);
-    }
-
-
     @PutMapping("/update")
     @ResponseBody
     public String updateOneCompany(@RequestBody Company company)
     {
-        return repository.save(company).getId();
+        Company old = repository.findById(company.getId()).get();
+        old = company;
+        return repository.save(old).getId();
     }
 }
