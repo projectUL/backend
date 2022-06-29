@@ -57,7 +57,7 @@ public class CompanyController {
     {
         Map<String, Object> response = new HashMap<>();
 
-        Optional<Company> company = repository.findByCompanyMail(email);
+        Optional<Company> company = repository.findById(email);
 
         if(company.isPresent())
         {
