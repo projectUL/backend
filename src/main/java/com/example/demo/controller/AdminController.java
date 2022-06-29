@@ -69,6 +69,7 @@ public class AdminController {
             Company company = new Company();
             company.setCompanyMail(email);
             company.setCompanyName(name);
+            company.setJobs(new String[0]);
             compRepo.save(company);
         }
 
