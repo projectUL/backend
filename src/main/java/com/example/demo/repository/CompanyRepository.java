@@ -14,6 +14,8 @@ public interface CompanyRepository extends MongoRepository<Company, Integer> {
     Page<Company> searchByName(Optional<String> name, Pageable pageable);
 
     Optional<Company> findById(String id);
+    Optional<Company> deleteById(String id);
     Optional<Company> findByCompanyMail(String email);
+
 
 }
