@@ -93,6 +93,7 @@ public class UsersController {
                     admin.setCompanyName(user.getCompanyName());
                     admin.setCompanyMail(user.getEmail());
                     admin.setIsAccepted(false);
+                    admin.setIsVerified(false);
                     adminRepo.save(admin);
 
                 }
