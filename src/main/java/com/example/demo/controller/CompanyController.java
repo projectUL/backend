@@ -1,13 +1,12 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Company;
+import com.example.demo.model.CompanyProfile;
 import com.example.demo.repository.CompanyRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -17,10 +16,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
@@ -77,5 +72,16 @@ public class CompanyController {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
     }
+
+
+    @PutMapping("/update")
+    @ResponseBody
+    public String updateOneCompany(@RequestBody Company company)
+    {
+        return repository.save(company).getId();
+    }
+
+
+
 
 }

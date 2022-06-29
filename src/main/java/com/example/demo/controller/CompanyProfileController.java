@@ -134,22 +134,32 @@ public class CompanyProfileController {
             }
             System.out.println("tempIndex"+ tempIndex);
 //            profile.get().getOfferDetails().remove(tempIndex);
-            profile.get().getOfferDetails().remove(tempIndex);
+//            profile.get().getOfferDetails().remove(tempIndex);
 
-            List<String> tempList = new ArrayList<String>();
+            List<String> tempList = profile.get().getOfferDetails().get(toDelete.getOfferDetailsIndex()).getApplications();
             List<String> outList = new ArrayList<String>();
+            List<String> finalTempList;
 
-            tempList = profile.get().getOfferDetails().get(toDelete.getOfferDetailsIndex()).getApplications();
-
-            List<String> finalTempList = tempList;
+            finalTempList = tempList;
+            int finalTempIndex = tempIndex;
             outList = tempList.stream().filter((x)->{
-               return x.equals(finalTempList.get(toDelete.getOfferDetailsIndex()));
+               return x.equals(finalTempList.get(finalTempIndex));
             })
                     .toList();
 
 
             System.out.println("list comparison");
-            System.out.println(outList);
+
+            for (String s : outList) {
+                System.out.print(s);
+            }
+            System.out.println();
+            for (String s : tempList) {
+                System.out.print(s);
+            }
+            System.out.println();
+
+            System.out.println(outList.size());
             System.out.println(tempList);
             profile.get().getOfferDetails().get(toDelete.getOfferDetailsIndex()).setApplications(outList);
 
