@@ -253,4 +253,39 @@ public class UsersController {
         response.put("email", user.getEmail());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+    
+    @PutMapping("/change/{email}/{offerID}/{status}")
+    @ResponseBody
+    public String chageStatus(@PathVariable String email,@PathVariable String offerID, @PathVariable int status)
+    {
+        Users user = repository.findByEmail(email).get();
+        Application[] applications = user.getApplications();
+        int pos = 0;
+        String stat = "";
+
+        for(int i=0; i< applications.length; i++)
+        {
+            if(applications[i].getOfferID().equals(offerID))
+            {
+                pos = i;
+            }
+        }
+
+        switch(status)
+        {
+            case 0:
+                stat = "Rejected";
+                break;
+            case 1:
+                stat = "Pending";
+                break;
+            case 2:
+                stat = "Accepted";
+                break;
+        }
+
+        applications[pos].setStatus(stat);
+        user.setApplications(applications);
+        return repository.save(user).getId();
+    }    
 }
