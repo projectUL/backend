@@ -74,7 +74,7 @@ public class CompanyController {
     
     @GetMapping("/email/{email}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> getOneCompany(@PathVariable String email)
+    public ResponseEntity<Map<String, Object>> getOneCompanyy(@PathVariable String email)
     {
         Map<String, Object> response = new HashMap<>();
 
