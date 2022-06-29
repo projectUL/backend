@@ -75,7 +75,7 @@ public class CompanyController {
     }
 
 
-    @PutMapping("/update")
+    @DeleteMapping("/update")
     @ResponseBody
     public String updateOneCompany(@RequestBody Company company)
     {
