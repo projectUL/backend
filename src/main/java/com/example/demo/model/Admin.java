@@ -15,4 +15,5 @@ public class Admin {
     private String companyName;
     private String companyMail;
     private Boolean isAccepted;
+    private Boolean isVerified;
 }
