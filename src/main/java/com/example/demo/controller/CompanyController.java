@@ -70,6 +70,27 @@ public class CompanyController {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
     }
+    
+    
+    @GetMapping("/email/{email}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getOneCompany(@PathVariable String email)
+    {
+        Map<String, Object> response = new HashMap<>();
+
+        Optional<Company> company = repository.findByEmail(email);
+
+        if(company.isPresent())
+        {
+            response.put("data", company);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        else
+        {
+            response.put("error", "Empty company");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
 
     @PutMapping("/update")
     @ResponseBody
