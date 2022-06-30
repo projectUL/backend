@@ -98,6 +98,7 @@ public class CompanyController {
     {
         Company old = repository.findById(company.getId()).get();
         old = company;
+        old.setJobs(company.getJobs());
         return repository.save(old).getId();
     }
 }
