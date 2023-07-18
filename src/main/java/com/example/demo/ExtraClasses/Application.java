@@ -16,4 +16,5 @@ public class Application {
     String status;
     Date applied;
     String offerID;
+    String userID;
 }

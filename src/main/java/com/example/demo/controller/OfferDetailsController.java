@@ -84,4 +84,17 @@ public class OfferDetailsController {
         return repository.findById(id);
     }
 
+    @GetMapping("/name/{name}")
+    @ResponseBody
+    public List<OfferDetails> getOffers(@PathVariable String name){
+        return repository.findByCompanyName(name);
+    }
+
+    @PostMapping("/create")
+    @ResponseBody
+    public String createOffer(@RequestBody OfferDetails offer)
+    {
+        return repository.save(offer).getId();
+    }
+
 }

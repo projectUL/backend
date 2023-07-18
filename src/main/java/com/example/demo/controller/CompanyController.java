@@ -2,25 +2,18 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Company;
 import com.example.demo.repository.CompanyRepository;
-import java.util.ArrayList;
-import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
@@ -37,7 +30,7 @@ public class CompanyController {
         int rightPage = page - 1;
         Pageable pageable = PageRequest.of(rightPage, size);
 
-        List<Company> list = new ArrayList<>();
+        List<Company> list;
         Page<Company> paging;
 
         if(q.isPresent())
@@ -57,12 +50,55 @@ public class CompanyController {
         response.put("data", list);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-    
-    @GetMapping("/{id}")
+
+    @GetMapping("/{email}")
     @ResponseBody
-    public Optional<Company> getOneCompany(@PathVariable String id)
+    public ResponseEntity<Map<String, Object>> getOneCompany(@PathVariable String email)
     {
-        return repository.findById(id);
+        Map<String, Object> response = new HashMap<>();
+
+        Optional<Company> company = repository.findById(email);
+
+        if(company.isPresent())
+        {
+            response.put("data", company);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        else
+        {
+            response.put("error", "Empty company");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
+    
+    
+    @GetMapping("/email/{email}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getOneCompanyy(@PathVariable String email)
+    {
+        Map<String, Object> response = new HashMap<>();
+
+        Optional<Company> company = repository.findByCompanyMail(email);
+
+        if(company.isPresent())
+        {
+            response.put("data", company);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        else
+        {
+            response.put("error", "Empty company");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
     }
 
+    @PutMapping("/update")
+    @ResponseBody
+    public String updateOneCompany(@RequestBody Company company)
+    {
+        Company old = repository.findById(company.getId()).get();
+        old = company;
+        old.setJobs(new String[0]);
+        return repository.save(old).getId();
+    }
 }

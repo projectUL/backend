@@ -3,7 +3,11 @@ package com.example.demo.model;
 import com.example.demo.ExtraClasses.JobDetail;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -25,6 +29,6 @@ public class OfferDetails {
     String[] tags;
     String companyLogo;
     String companyName;
-    String[] applications;
+    List<String> applications = new ArrayList<String>();
     Date created;
 }

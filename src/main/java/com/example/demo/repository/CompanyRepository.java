@@ -9,10 +9,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
 
 public interface CompanyRepository extends MongoRepository<Company, Integer> {
-    
+
     @Query("{'companyName':{'$regex':'?0','$options':'i'}}")
     Page<Company> searchByName(Optional<String> name, Pageable pageable);
-    
+
     Optional<Company> findById(String id);
-    
+    void deleteById(String id);
+    Optional<Company> findByCompanyMail(String email);
+
+
 }

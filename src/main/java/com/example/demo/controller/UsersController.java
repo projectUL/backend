@@ -3,8 +3,11 @@ package com.example.demo.controller;
 import com.example.demo.ExtraClasses.Application;
 import com.example.demo.ExtraClasses.UserEdit;
 import com.example.demo.ExtraClasses.UserRegister;
+import com.example.demo.model.Admin;
+import com.example.demo.model.OfferDetails;
+import com.example.demo.model.UserProfile;
 import com.example.demo.model.Users;
-import com.example.demo.repository.UsersRepository;
+import com.example.demo.repository.*;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.TextCodec;
@@ -14,10 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
@@ -27,21 +27,30 @@ public class UsersController {
     @Autowired
     UsersRepository repository;
 
-    /*
-    @GetMapping("/{id}")
+    @Autowired
+    UserProfileRepository userRepo;
+
+    @Autowired
+    AdminRepository adminRepo;
+
+    @Autowired
+    OfferDetailsRepository offerRepo;
+
+    
+    @GetMapping("/id/{id}")
     Optional<Users> getUser(@PathVariable String id){
         return repository.findById(id);
-    }*/
+    }
 
     @PostMapping("/register")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> registerUser(@RequestBody UserRegister register) {
         Map<String, Object> response = new HashMap<>();
-        
+
         Users user = new Users();
         user.setEmail(register.getEmail());
         user.setApplications(new Application[0]);
-        
+
         if(register.getCompanyName() == null || register.getCompanyName().isBlank())
         {
             user.setIsEmployer(false);
@@ -55,15 +64,15 @@ public class UsersController {
             user.setAccessLevel(2);
         }
 
-        
+
         if((user.getEmail().contains("edu.") && user.getIsEmployer() == false) || (!user.getEmail().contains("edu.") && user.getIsEmployer() == true))
         {
             if (repository.existsByEmail(user.getEmail()))
             {
                 response.put("errorMessage", "User already exists");
                 return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
-            } 
-            else 
+            }
+            else
             {
                 BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -71,12 +80,24 @@ public class UsersController {
 
                 Long now = System.currentTimeMillis();
                 String token = Jwts.builder().setSubject(user.getEmail()).claim("email", user.getEmail()).claim("accessLevel", user.getAccessLevel()).setExpiration(new Date(now + 3600000)).signWith(SignatureAlgorithm.HS256, TextCodec.BASE64.decode("SafestPassEver")).compact();
-                
+
                 repository.save(user);
                 response.put("email", user.getEmail());
                 response.put("accessLevel", user.getAccessLevel());
                 response.put("token", token);
                 response.put("expiresIn", 3600);
+
+                if(user.getIsEmployer())
+                {
+                    Admin admin = new Admin();
+                    admin.setCompanyName(user.getCompanyName());
+                    admin.setCompanyMail(user.getEmail());
+                    admin.setIsAccepted(false);
+                    admin.setIsVerified(false);
+                    adminRepo.save(admin);
+
+                }
+
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
         }
@@ -91,7 +112,7 @@ public class UsersController {
             return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }
     }
-    
+
     @PostMapping("/login")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Users user) {
@@ -104,9 +125,22 @@ public class UsersController {
             int accessLvl = usr.get().getAccessLevel();
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-            if (encoder.matches(user.getPassword(), PassDB)) {
+            if(usr.get().getIsEmployer())
+            {
+                String em = usr.get().getEmail();
+
+                Admin admin = adminRepo.findByCompanyMail(em);
+                if(admin.getIsAccepted() == false)
+                {
+                    response.put("errorMessage", "Company is not accepted");
+                    return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+                }
+            }
+
+            if (encoder.matches(user.getPassword(), PassDB))
+            {
                 Long now = System.currentTimeMillis();
-                String token = Jwts.builder().setSubject(user.getEmail()).claim("email", user.getEmail()).claim("accessLevel", accessLvl).setExpiration(new Date(now + 3600000)).signWith(SignatureAlgorithm.HS256, "SafestPassEver").compact();
+                String token = Jwts.builder().setSubject(user.getEmail()).claim("email", user.getEmail()).claim("accessLevel", accessLvl).setExpiration(new Date(now + 36000000)).signWith(SignatureAlgorithm.HS256, "SafestPassEver").compact();
 
                 response.put("email", user.getEmail());
                 response.put("accessLevel", accessLvl);
@@ -118,7 +152,9 @@ public class UsersController {
                 return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
             }
 
-        } else {
+        }
+        else
+        {
             response.put("errorMessage", "User does not exist.");
             return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }
@@ -146,8 +182,13 @@ public class UsersController {
             Users user = repository.findByEmail(editUser.getOldEmail()).get();
             user.setEmail(editUser.getNewEmail());
             repository.save(user);
-
             response.put("email", user.getEmail());
+
+
+            UserProfile profile = userRepo.findByUserEmail(editUser.getOldEmail()).get();
+            profile.setUserEmail(editUser.getNewEmail());
+            userRepo.save(profile);
+
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
     }
@@ -181,7 +222,7 @@ public class UsersController {
             return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
         }
     }
-    
+
     @PutMapping("/apply/{email}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> addApplication(@PathVariable String email, @RequestBody Application application)
@@ -190,19 +231,62 @@ public class UsersController {
         int size = user.getApplications().length;
 
         Application[] newApplications = new Application[size+1];
-        
+
         for(int i=0; i<size; i++)
         {
             newApplications[i] = user.getApplications()[i];
         }
-        
+
         newApplications[size] = application;
-        
+
         user.setApplications(newApplications);
         repository.save(user);
-        
+
+        OfferDetails offers = offerRepo.findById(application.getOfferID()).get();
+
+        List<String> applicationUsers = offers.getApplications();
+        applicationUsers.add(application.getUserID());
+        offers.setApplications(applicationUsers);
+        offerRepo.save(offers);
+
+
         Map<String, Object> response = new HashMap<>();
         response.put("email", user.getEmail());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+    
+    @PutMapping("/change/{email}/{offerID}/{status}")
+    @ResponseBody
+    public String chageStatus(@PathVariable String email,@PathVariable String offerID, @PathVariable int status)
+    {
+        Users user = repository.findByEmail(email).get();
+        Application[] applications = user.getApplications();
+        int pos = 0;
+        String stat = "";
+
+        for(int i=0; i< applications.length; i++)
+        {
+            if(applications[i].getOfferID().equals(offerID))
+            {
+                pos = i;
+            }
+        }
+
+        switch(status)
+        {
+            case 0:
+                stat = "Rejected";
+                break;
+            case 1:
+                stat = "Pending";
+                break;
+            case 2:
+                stat = "Accepted";
+                break;
+        }
+
+        applications[pos].setStatus(stat);
+        user.setApplications(applications);
+        return repository.save(user).getId();
+    }    
 }

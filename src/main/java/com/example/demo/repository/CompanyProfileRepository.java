@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
 
-public interface CompanyProfileRepository extends MongoRepository<CompanyProfile,Integer> {
+public interface  CompanyProfileRepository extends MongoRepository<CompanyProfile,Integer> {
     Optional<CompanyProfile> findById(String id);
     Optional<CompanyProfile> findByUserEmail(String email);
 }
